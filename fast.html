@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>따릉이 빠른 이동 코스</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css" />
+    <!-- Google Maps API 스크립트 -->
+    <!-- 중요: 'YOUR_API_KEY' 부분을 발급받은 본인의 Google Cloud API 키로 교체해야 합니다. -->
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCJdUhznZIhgPwsAHZ_Z5f949cBvVFpzls&callback=initMap&libraries=geometry"></script>
+    <style>
+        :root {
+            --primary: #20C997;
+            --text: #212529;
+            --sub: #6c757d;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: "Pretendard", sans-serif;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .control-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background-color: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            width: 350px;
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .panel-header h1 {
+            font-size: 18px;
+            font-weight: 800;
+            margin: 0;
+            color: var(--primary);
+        }
+        
+        .btn-home {
+            text-decoration: none;
+            font-size: 13px;
+            color: var(--text);
+            font-weight: 600;
+            padding: 6px 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+
+        .input-group {
+            margin-bottom: 10px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .input-group select {
+            width: 100%;
+            padding: 10px;
+            font-family: "Pretendard", sans-serif;
+            font-size: 14px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+        }
+        
+        .btn-find {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-find:hover {
+            background-color: #15a47a;
+        }
+
+        .result-panel {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .result-panel div {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .result-panel span {
+            font-weight: 700;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="control-panel">
+        <div class="panel-header">
+            <h1>빠른 경로 탐색</h1>
+            <a href="index.html" class="btn-home">홈으로</a>
+        </div>
+        <div class="input-group">
+            <label for="start-station">출발 대여소</label>
+            <select id="start-station"></select>
+        </div>
+        <div class="input-group">
+            <label for="end-station">도착 대여소</label>
+            <select id="end-station"></select>
+        </div>
+        <button id="find-route" class="btn-find">경로 탐색</button>
+        <div id="route-result" class="result-panel" style="display: none;">
+            <div id="distance"></div>
+            <div id="duration"></div>
+        </div>
+    </div>
+    <div id="map"></div>
+
+    <script>
+        let map;
+
+        function initMap() {
+            // 서울 중심 좌표
+            const seoulCenter = { lat: 37.5665, lng: 126.9780 };
+            
+            try {
+                map = new google.maps.Map(document.getElementById('map'), {
+                    center: seoulCenter,
+                    zoom: 12,
+                    disableDefaultUI: true, // 기본 UI 제거
+                    zoomControl: true // 줌 컨트롤만 활성화
+                });
+                initialize(); // 지도가 준비되면 나머지 로직 실행
+            } catch (e) {
+                const mapDiv = document.getElementById('map');
+                mapDiv.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; width:100%; height:100%; color:#c00;"><strong>오류:</strong> Google 지도 API를 불러오지 못했습니다. API 키를 확인해주세요.</div>';
+                console.error("Google Maps API failed to load:", e);
+            }
+        }
+
+        function initialize() {
+            // 따릉이 대여소 Mock 데이터
+            const stations = [
+                { name: "102. 망원역 1번출구 앞", lat: 37.555650, lng: 126.910629 },
+                { name: "108. 마포구성산센터 앞", lat: 37.560590, lng: 126.914825 },
+                { name: "207. 여의나루역 1번출구 앞", lat: 37.527000, lng: 126.932838 },
+                { name: "305. 종로구청", lat: 37.572480, lng: 126.978813 },
+                { name: "419. 홈플러스 앞", lat: 37.585548, lng: 127.027061 },
+                { name: "502. 뚝섬유원지역 1번출구 앞", lat: 37.531231, lng: 127.067337 },
+                { name: "1308. 잠실나루역 3번출구", lat: 37.520840, lng: 127.100357 },
+                { name: "1517. 양재역 5번출구", lat: 37.484590, lng: 127.034332 },
+                { name: "2102. 등촌역 7번출구", lat: 37.551290, lng: 126.862343 },
+                { name: "2219. 고속터미널역 8-1번", lat: 37.504930, lng: 127.004921 },
+            ];
+
+            const startSelect = document.getElementById('start-station');
+            const endSelect = document.getElementById('end-station');
+
+            stations.forEach((station, index) => {
+                const option = new Option(`${station.name}`, index);
+                startSelect.add(option.cloneNode(true));
+                endSelect.add(option);
+            });
+
+            let startMarker = null;
+            let endMarker = null;
+            let polyline = null;
+
+            document.getElementById('find-route').addEventListener('click', () => {
+                const startIndex = startSelect.value;
+                const endIndex = endSelect.value;
+
+                if (startIndex === endIndex) {
+                    alert('출발지와 목적지가 같습니다. 다른 대여소를 선택해주세요.');
+                    return;
+                }
+
+                // 기존 마커 및 경로 제거
+                if (startMarker) startMarker.setMap(null);
+                if (endMarker) endMarker.setMap(null);
+                if (polyline) polyline.setMap(null);
+
+                const startStation = stations[startIndex];
+                const endStation = stations[endIndex];
+
+                const startPos = { lat: startStation.lat, lng: startStation.lng };
+                const endPos = { lat: endStation.lat, lng: endStation.lng };
+
+                // 마커 생성
+                startMarker = new google.maps.Marker({ position: startPos, map: map, title: '출발' });
+                endMarker = new google.maps.Marker({ position: endPos, map: map, title: '도착' });
+
+                // 경로(직선) 그리기
+                polyline = new google.maps.Polyline({
+                    path: [startPos, endPos],
+                    geodesic: true,
+                    strokeColor: '#20C997',
+                    strokeOpacity: 0.8,
+                    strokeWeight: 5
+                });
+                polyline.setMap(map);
+
+                // 지도 경계를 경로에 맞게 조정
+                const bounds = new google.maps.LatLngBounds();
+                bounds.extend(startPos);
+                bounds.extend(endPos);
+                map.fitBounds(bounds, {left: 400, top: 50, right: 50, bottom: 50}); // 컨트롤 패널 영역을 고려하여 패딩 추가
+
+                // 거리 및 시간 계산 (Google Maps Geometry Library 사용)
+                const distance = google.maps.geometry.spherical.computeDistanceBetween(
+                    new google.maps.LatLng(startPos),
+                    new google.maps.LatLng(endPos)
+                );
+                const distanceInKm = (distance / 1000).toFixed(2);
+                
+                const avgSpeedKmh = 15; // 자전거 평균 속도 15km/h
+                const durationInMinutes = Math.round((distanceInKm / avgSpeedKmh) * 60);
+
+                // 결과 표시
+                document.getElementById('distance').innerHTML = `이동 거리: <span>약 ${distanceInKm} km</span>`;
+                document.getElementById('duration').innerHTML = `소요 시간: <span>약 ${durationInMinutes} 분</span>`;
+                document.getElementById('route-result').style.display = 'block';
+            });
+        }
+    </script>
+</body>
+</html>
+

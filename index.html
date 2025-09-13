@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>따릉이 : 서울 공공자전거</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css" />
+    <meta name="theme-color" content="#20C997" />
+    <style>
+      :root{
+        --primary:#20C997;
+        --primary-dark:#15a47a;
+        --text:#212529;
+        --sub:#6c757d;
+        --background:#f8f9fa;
+        --frameX:56px;
+        --frameY:20px;
+      }
+      html,body{min-height:100%}
+      body{margin:0;font-family:"Pretendard",ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--text);padding:var(--frameY) var(--frameX);background-color:var(--background)}
+      body::before{content:"";position:fixed;inset:0;z-index:-2;background:url('image_e10dd7.png') center/cover no-repeat;filter:blur(2px) opacity(0.7)}
+      <!-- body::after{content:"";position:fixed;inset:0;z-index:-1;background:linear-gradient(to bottom, rgba(255,255,255,0.7), rgba(255,255,255,0.9)), top=10px} -->
+
+      /* 상단 바 (좌측) */
+      .landing-topbar{position:fixed;top:12px;left:12px;z-index:60;display:flex;gap:6px;flex-wrap:wrap;background:rgba(255,255,255,0.85);backdrop-filter:saturate(120%) blur(6px);border:1px solid #eaecef;border-radius:999px;padding:6px 8px;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+      .landing-topbar button{appearance:none;border:0;background:transparent;border-radius:999px;padding:8px 10px;font-weight:700;color:#2b2f33;cursor:pointer}
+      .landing-topbar button:hover{background:#f0f2f5}
+      .brand-photo{height:36px;border-radius:8px;object-fit:cover}
+
+      /* 상단 네비게이션 (우측) */
+      .landing-nav{position:fixed;top:12px;right:12px;z-index:60;display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:rgba(255,255,255,0.85);backdrop-filter:saturate(120%) blur(6px);border:1px solid #eaecef;border-radius:999px;padding:6px 8px;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+      .landing-nav a, .landing-nav button{appearance:none;border:0;background:transparent;border-radius:999px;padding:8px 12px;text-decoration:none;font-weight:700;color:#2b2f33;cursor:pointer}
+      .landing-nav a:hover, .landing-nav button:hover{background:#f0f2f5}
+
+      /* 랜딩 본문 */
+      .landing{min-height:calc(100vh - (var(--frameY)*2));display:grid;place-items:center;padding:8px 0}
+      .landing-inner{max-width:960px;width:min(960px,100%);text-align:center;position:relative;transform:translateY(-10px);z-index:1}
+      h1{margin:16px 0 24px 0;font-size:36px;line-height:1.4;font-weight:800}
+      .accent{color:var(--primary)}
+      .lead{font-size:18px;color:#495057;margin-top:8px}
+
+      /* 코스 선택 */
+      .choices{display:grid;grid-template-columns:1fr;gap:20px;margin-top:40px}
+      @media(min-width:760px){.choices{grid-template-columns:repeat(3,1fr)}}
+      .choice{text-decoration:none;color:inherit;position:relative;border:1px solid #e0e0e0;border-radius:20px;padding:24px;cursor:pointer;background:rgba(255,255,255,0.85);box-shadow:0 4px 12px rgba(0,0,0,0.08);display:flex;flex-direction:column;align-items:center;gap:12px;transition:transform .2s ease, box-shadow .2s ease;overflow:hidden}
+      .choice:hover{transform:translateY(-5px);box-shadow:0 12px 24px rgba(0,0,0,0.12);border-color:var(--primary)}
+      .choice .icon{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background-color:#e8f9f5}
+      .choice .title{font-size:20px;font-weight:800}
+      .choice .sub{color:var(--sub);font-size:14px}
+
+      /* 소개 카드 */
+      .landing-desc{width:min(960px,100%);margin:32px auto 0;padding:0 12px}
+      .desc-card{display:flex;align-items:center;justify-content:space-between;gap:24px;background:linear-gradient(135deg, var(--primary), var(--primary-dark));color:#fff;border-radius:20px;box-shadow:0 16px 36px rgba(32,201,151,0.3);padding:24px 30px;line-height:1.6}
+      .desc-text{font-weight:600;flex:1}
+      .download-actions{display:flex;gap:12px;flex-wrap:wrap}
+      .download-actions a{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--primary-dark);background:#ffffff;border-radius:12px;padding:12px 16px;font-weight:900;transition:all .2s ease}
+
+      /* 고객센터/법률 */
+      .landing-support{width:min(960px,100%);margin:24px auto 0;padding:0 12px}
+      .landing-support .card{background:rgba(255,255,255,0.9);border:1px solid #e9ecef;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:18px}
+      .landing-support .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+      .landing-support .kv{display:flex;justify-content:space-between;gap:12px;padding:6px 0}
+      .landing-legal{width:min(960px,100%);margin:16px auto 0;padding:0 12px}
+      .landing-legal .legal-card{background:#fff;border:1px solid #e9ecef;border-radius:12px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,0.08)}
+
+      /* 패널 모달 (상단 네비 버튼용) */
+      .panel-modal{display:none;position:fixed;inset:0;z-index:80;align-items:center;justify-content:center;background:rgba(0,0,0,0.35)}
+      .panel-modal .dialog{width:min(680px,92%);background:#fff;border-radius:16px;padding:18px;box-shadow:0 24px 56px rgba(0,0,0,0.25)}
+      .panel-modal .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+      .panel-modal .header h3{margin:0;font-size:18px}
+      .panel-modal .close{appearance:none;border:0;border-radius:8px;padding:8px 10px;background:#f1f3f5;cursor:pointer}
+
+      /* 로그인 모달 */
+      .modal{display:none;position:fixed;inset:0;z-index:90;align-items:center;justify-content:center;background:rgba(0,0,0,0.35)}
+      .modal .dialog{width:min(420px,92%);background:#fff;border-radius:16px;padding:18px;box-shadow:0 24px 56px rgba(0,0,0,0.25)}
+      .modal .dialog h3{margin-top:0}
+      .modal .dialog label{display:block;margin:8px 0 4px}
+      .modal .dialog input{width:95%;padding:10px;border:1px solid #e9ecef;border-radius:10px}
+      .modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+      .btn{appearance:none;border:0;border-radius:10px;padding:10px 12px;font-weight:800;cursor:pointer}
+      .btn.primary{background:var(--primary);color:#0c4c27}
+      .btn.close{background:#f1f3f5}
+    </style>
+  </head>
+  <body>
+    <section class="landing" id="landing">
+      <div class="landing-topbar">
+        <img src="image_e10dd8.png" alt="따릉이" class="brand-photo"/>
+        <button id="langBtn">한국어</button>
+        <button id="loginBtn">로그인</button>
+      </div>
+      <div class="landing-nav" id="landingNav">
+        <button data-panel="guide">이용안내</button>
+        <button data-panel="fees">요금안내</button>
+        <button data-panel="rent">대여</button>
+        <button data-panel="return">반납</button>
+        <button data-panel="support">고객센터</button>
+        <button data-panel="apps">앱 다운로드</button>
+      </div>
+      <div class="landing-inner">
+        <div class="brand">
+          <img src="image_e10dd8.png" alt="따릉이 로고" class="brand-photo" style="height:50px"/>
+        </div>
+        <div class="choices" style="margin-top:16px; margin-bottom:8px; display:flex; justify-content:center; align-items:center;">
+        <h1>
+          서울을 즐기는 가장 <span class="accent">스마트한</span> 방법<br>
+          <p class="lead">언제 어디서나, 따릉이와 함께 도시를 누벼보세요.</p>
+        </h1></div>
+        <div class="choices">
+          <a class="choice" href="fast.html">
+            <div class="icon">🚴‍♂️</div>
+            <div class="title">빠른 이동 코스</div>
+            <div class="sub">출발/도착 선택 후 최단 경로</div>
+          </a>
+          <a class="choice" href="stroll.html">
+            <div class="icon">🌿</div>
+            <div class="title">산책 코스</div>
+            <div class="sub">서울의 풍경을 즐기는 추천 코스</div>
+          </a>
+          <a class="choice" href="find.html">
+            <div class="icon">🗺️</div>
+            <div class="title">대여소 조회</div>
+            <div class="sub">운동에 적합한 순환 코스</div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <div class="landing-desc">
+      <div class="desc-card">
+        <div class="desc-text">서울 구석구석, 따릉이 앱으로 더 쉽고 편리하게! 가까운 대여소를 찾아 지금 바로 이용해보세요.</div>
+        <div class="download-actions">
+          <a href="#" class="download ios" aria-label="iOS 다운로드">App Store</a>
+          <a href="#" class="download android" aria-label="Android 다운로드">Google Play</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="landing-support">
+      <div class="card">
+        <div class="grid">
+          <div class="card"><div class="v"><h3>고객센터</h3></div><div class="k">1599-0120</div></div>
+          <div>
+            <div class="card"><div class="v"><h3>운영시간</h3></div><div class="k">365일 24시간</div></div>
+          </div>
+          <div>
+            <div class="card"><div class="v"><h3>분실 / 도난</h3></div><div class="k">즉시 고객센터 연락</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="landing-legal">
+      <div class="legal-card">
+        <div><strong>이용약관 · 위치정보관련 약관 · 개인정보처리방침 · 보험안내</strong></div><br>
+        <div>서울특별시 중구 세종대로 110 서울특별시 대표자 오세훈<br> Tel : 1599-0120 | (사업자등록번호 : 104-83-00469) | 우편번호 04524</div>
+        <div>COPYRIGHT ⓒ 2018 bikeseoul All RIGHTS RESERVED.</div>
+      </div>
+    </div>
+
+    <!-- 상단 패널 모달 -->
+    <div class="panel-modal" id="panelModal" role="dialog" aria-modal="true" aria-labelledby="panelTitle">
+      <div class="dialog">
+        <div class="header">
+          <h3 id="panelTitle">안내</h3>
+          <button class="close" id="panelClose">닫기</button>
+        </div>
+        <div id="panelBody" style="line-height:1.6;color:#495057">선택한 메뉴의 안내가 이곳에 표시됩니다. (데모)</div>
+      </div>
+    </div>
+
+    <!-- 로그인 모달 -->
+    <div class="modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+      <div class="dialog">
+        <h3 id="loginTitle">로그인</h3>
+        <label>아이디(이메일 또는 휴대폰)</label>
+        <input type="text" id="loginId" size="30" placeholder="example@domain.com" />
+        <label>비밀번호</label>
+        <input type="password" id="loginPw" placeholder="••••••••" />
+        <div class="actions">
+          <button class="btn close" id="loginClose">닫기</button>
+          <button class="btn primary" id="loginSubmit">로그인</button>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:#6c757d">SNS 간편 로그인</div>
+      </div>
+    </div>
+
+    <script>
+      // 상단 네비 패널 열기 기능 (루트 index의 버튼 동작 유지)
+      function openPanel(key){
+        const titles={ guide:'이용안내', fees:'요금안내', rent:'대여', return: '반납', support:'고객센터', apps:'앱 다운로드' };
+        const desc={
+          guide:'회원가입 → 따릉이 대여 → QR 스캔 또는 대여번호 입력 → 안전 수칙 준수 → 반납 및 이용내역 확인',
+          fees:'시간당 1,000원',
+          rent: '대여: 대여소 도킹 해제 또는 QR 스캔 후 이용 시작 (※ 대여/반납 장애 시 고객센터 문의)',
+          return: '반납: 지정 대여소 거치대에 도킹 (※ 대여/반납 장애 시 고객센터 문의)',
+          support:'1599-0120 (365일 24시간 운영)',
+          apps:'iOS/Android 앱 다운로드'
+        };
+        document.getElementById('panelTitle').textContent = titles[key] || '안내';
+        document.getElementById('panelBody').textContent = desc[key] || '선택한 메뉴의 안내가 이곳에 표시됩니다. (데모)';
+        document.getElementById('panelModal').style.display='flex';
+      }
+      document.getElementById('landingNav').addEventListener('click', (e)=>{
+        const btn=e.target.closest('button'); if(!btn) return; openPanel(btn.dataset.panel);
+      });
+      document.getElementById('panelClose').addEventListener('click', ()=>{
+        document.getElementById('panelModal').style.display='none';
+      });
+      document.getElementById('panelModal').addEventListener('click', (e)=>{
+        if(e.target===document.getElementById('panelModal')) document.getElementById('panelModal').style.display='none';
+      });
+
+      // 로그인/언어 토글 (루트 index 동작 유지)
+      const loginBtn = document.getElementById('loginBtn');
+      const loginModal = document.getElementById('loginModal');
+      const loginClose = document.getElementById('loginClose');
+      loginBtn?.addEventListener('click', ()=>{ loginModal.style.display='flex'; });
+      loginClose?.addEventListener('click', ()=>{ loginModal.style.display='none'; });
+      loginModal?.addEventListener('click', (e)=>{ if(e.target===loginModal) loginModal.style.display='none'; });
+      document.getElementById('loginSubmit')?.addEventListener('click', ()=>{ alert('로그인 시도'); loginModal.style.display='none'; });
+
+      const langBtn = document.getElementById('langBtn');
+      const langs = ['한국어','ENG','中國語','日本語'];
+      let langIndex = 0;
+      langBtn?.addEventListener('click', ()=>{ langIndex=(langIndex+1)%langs.length; langBtn.textContent=langs[langIndex]; });
+    </script>
+  </body>
+ </html>

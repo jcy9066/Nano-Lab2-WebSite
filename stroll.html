@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>따릉이 산책 코스</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css">
+    <style>
+        :root {
+            --primary: #20C997;
+            --text: #212529;
+            --sub: #6c757d;
+            --background: #f8f9fa;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Pretendard", sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+        }
+
+        .header {
+            background: white;
+            padding: 16px 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin: 0;
+            color: var(--primary);
+        }
+
+        .btn-home {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 700;
+            padding: 8px 16px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-home:hover {
+            background-color: #e9ecef;
+            border-color: #ced4da;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 32px auto;
+            padding: 0 24px;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 18px;
+            color: var(--sub);
+            margin-bottom: 32px;
+        }
+
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .course-card {
+            background-color: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+        }
+
+        .course-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .course-content {
+            padding: 20px;
+        }
+
+        .course-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+        }
+
+        .course-description {
+            font-size: 14px;
+            color: var(--sub);
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .course-info {
+            display: flex;
+            gap: 16px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .course-info span {
+           color: var(--primary);
+        }
+
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <h1>산책 코스</h1>
+        <a href="index.html" class="btn-home">홈으로</a>
+    </header>
+
+    <div class="container">
+        <h2 class="page-title">서울의 매력을 만끽하는 자전거길</h2>
+        <p class="page-subtitle">따릉이와 함께 도심 속 자연을 느끼며 여유로운 시간을 보내세요.</p>
+
+        <div class="course-grid">
+            <!-- Course 1 -->
+            <div class="course-card">
+                <img src="image1.jpg" alt="경춘선 숲길 자전거길">
+                <div class="course-content">
+                    <h3 class="course-title">경춘선 숲길 자전거길</h3>
+                    <p class="course-description">옛 철길의 정취를 느끼며 달리는 도심 속 힐링 코스입니다. 공원과 카페가 어우러져 있습니다.</p>
+                    <div class="course-info">
+                        <div>거리: <span>6.3 km</span></div>
+                        <div>소요시간: <span>약 25분</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course 2 -->
+            <div class="course-card">
+                <img src="image2.jpg" alt="광나루 자전거길">
+                <div class="course-content">
+                    <h3 class="course-title">광나루 자전거길</h3>
+                    <p class="course-description">갖가지 단풍나무가 울창해 가을에 정취를 즐기기 좋은 자전거길입니다.</p>
+                    <div class="course-info">
+                        <div>거리: <span>5 km</span></div>
+                        <div>소요시간: <span>약 20분</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course 3 -->
+            <div class="course-card">
+                <img src="image3.jpg" alt="망원 자전거길">
+                <div class="course-content">
+                    <h3 class="course-title">망원 자전거길</h3>
+                    <p class="course-description">장애물이 없이 탁 트여 있어 시원한 풍경과 함께 강바람을 즐길 수 있는 코스입니다.</p>
+                    <div class="course-info">
+                        <div>거리: <span>5 km</span></div>
+                        <div>소요시간: <span>약 20분</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course 4 -->
+            <div class="course-card">
+                <img src="image4.jpg" alt="여의도 자전거길">
+                <div class="course-content">
+                    <h3 class="course-title">여의도 자전거길</h3>
+                    <p class="course-description">길도 평탄하고 조명도 잘 돼 있어 밤에 타기 좋은 코스입니다.</p>
+                    <div class="course-info">
+                        <div>거리: <span>8 km</span></div>
+                        <div>소요시간: <span>약 35분</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course 5 -->
+            <div class="course-card">
+                <img src="image5.jpg" alt="반포 한강 자전거길">
+                <div class="course-content">
+                    <h3 class="course-title">반포 한강 자전거길</h3>
+                    <p class="course-description">낮에는 탁 트인 시야와 함께 솔솔 부는 강바람을, 밤에는 아름다운 야경을 즐길 수 있는 코스입니다.</p>
+                    <div class="course-info">
+                        <div>거리: <span>4 km</span></div>
+                        <div>소요시간: <span>약 15분</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course 6 -->
+            <div class="course-card">
+                <img src="image6.jpg" alt="안양천 자전거길">
+                <div class="course-content">
+                    <h3 class="course-title">안양천 자전거길</h3>
+                    <p class="course-description">봄이면 눈부신 벚꽃이 반겨주고, 중간에 대나무 숲이 있는 코스입니다.</p>
+                    <div class="course-info">
+                        <div>거리: <span>32 km</span></div>
+                        <div>소요시간: <span>약 1시간 30분</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

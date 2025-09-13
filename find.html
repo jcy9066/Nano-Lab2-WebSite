@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>대여소 조회</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css" />
+    <style>
+      :root{ --primary:#20C997; --frameX:56px; --frameY:20px }
+      html,body{min-height:100%}
+      body{margin:0;padding:var(--frameY) var(--frameX);font-family:"Pretendard",ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#212529}
+      body::before{content:"";position:fixed;inset:0;z-index:-1;background:url('image_e10dd7.png') center/cover no-repeat}
+      .container{width:min(980px,100%);margin:0 auto}
+      .topbar{display:flex;gap:8px;align-items:center;background:rgba(255,255,255,.9);border:1px solid #eaecef;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:10px}
+      .btn{appearance:none;border:0;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}
+      .btn.ghost{background:#fff;border:1px solid #e5e7eb}
+      .badge{background:#f6f8fa;border:1px solid #e9eaec;border-radius:999px;padding:6px 10px;font-weight:700}
+      .input{flex:1;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;border:1px solid #eceff2;background:#fff;position:relative}
+      .input input{flex:1;border:0;outline:0;background:transparent;font-size:15px}
+      .suggest{position:absolute;left:0;right:0;top:calc(100% + 6px);background:#fff;border:1px solid #eceff2;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.14);padding:6px;display:none;z-index:1000}
+      .suggest .item{padding:8px 10px;border-radius:8px;cursor:pointer}
+      .suggest .item:hover{background:#f6f8fa}
+      .card{background:rgba(255,255,255,0.9);border:1px solid #e9eaec;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:14px;margin-top:12px}
+      .imgviewer{position:relative;background:#111;border-radius:12px;overflow:hidden;border:1px solid #1f2327;margin-top:10px}
+      .imgviewer .canvas{position:relative;width:100%;height:420px;background:#111;touch-action:none;cursor:grab}
+      .imgviewer .canvas:active{cursor:grabbing}
+      .imgviewer img{position:absolute;left:0;top:0;transform-origin:0 0;user-select:none;pointer-events:none}
+      .imgviewer .controls{position:absolute;right:8px;bottom:8px;display:flex;gap:6px}
+      .imgviewer .controls button{appearance:none;border:0;background:rgba(255,255,255,0.95);border-radius:10px;padding:8px 10px;cursor:pointer;font-weight:800}
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="topbar">
+        <a class="btn ghost" href="index.html">← 홈</a>
+        <span class="badge">대여소 조회</span>
+        <div class="input">
+          <span aria-hidden>🔎</span>
+          <input id="destInput" placeholder="목적지를 입력하세요" />
+          <div class="suggest" id="suggestBox">
+            <div class="item">건국대학교</div>
+            <div class="item">흥인지문 (동대문)</div>
+            <div class="item">여의도</div>
+          </div>
+        </div>
+        <button class="btn" id="goBtn" style="background:var(--primary);color:#0c4c27">확인</button>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:800">대여소 조회</div>
+        <div id="imageWrap" class="imgviewer">
+          <div class="canvas"><img id="image" src="image_e10dd10.png" alt="대여소 지도"/></div>
+          <div class="controls"><button id="zin">＋</button><button id="zout">－</button></div>
+        </div>
+        <div style="color:#6c757d;margin-top:8px">이미지를 드래그로 이동, 휠/버튼으로 확대/축소</div>
+      </div>
+    </div>
+
+    <script>
+      const suggestBox = document.getElementById('suggestBox');
+      const destInput = document.getElementById('destInput');
+      destInput.addEventListener('focus', ()=> suggestBox.style.display='block');
+      document.addEventListener('click', (e)=>{ if(!e.target.closest('.input')) suggestBox.style.display='none'; });
+      suggestBox.addEventListener('click', (e)=>{ const it=e.target.closest('.item'); if(!it) return; destInput.value = it.textContent; suggestBox.style.display='none'; destInput.focus(); });
+
+      function initImageViewer(wrap){
+        const canvas = wrap.querySelector('.canvas'); const img = wrap.querySelector('img');
+        let scale=1, minS=0.6, maxS=3, pos={x:0,y:0}, drag=null;
+        function update(){ img.style.transform = `translate(${pos.x}px, ${pos.y}px) scale(${scale})`; }
+        function clamp(){ const w = canvas.clientWidth, h=canvas.clientHeight; const iw=img.naturalWidth*scale, ih=img.naturalHeight*scale; const minX = Math.min(0, w - iw), minY = Math.min(0, h - ih); pos.x = Math.max(minX, Math.min(0, pos.x)); pos.y = Math.max(minY, Math.min(0, pos.y)); }
+        img.addEventListener('load', ()=>{ scale = Math.min(canvas.clientWidth/img.naturalWidth, canvas.clientHeight/img.naturalHeight) * 1.1; const cx=(canvas.clientWidth - img.naturalWidth*scale)/2; const cy=(canvas.clientHeight - img.naturalHeight*scale)/2; pos={x:cx,y:cy}; update(); });
+        canvas.addEventListener('pointerdown', (e)=>{ drag={x:e.clientX, y:e.clientY, sx:pos.x, sy:pos.y}; canvas.setPointerCapture(e.pointerId); });
+        canvas.addEventListener('pointermove', (e)=>{ if(!drag) return; pos.x = drag.sx + (e.clientX - drag.x); pos.y = drag.sy + (e.clientY - drag.y); clamp(); update(); });
+        canvas.addEventListener('pointerup', ()=>{ drag=null; });
+        canvas.addEventListener('wheel', (e)=>{ e.preventDefault(); const delta = e.deltaY<0? 1.1: 0.9; const rect=canvas.getBoundingClientRect(); const ox=e.clientX-rect.left-pos.x, oy=e.clientY-rect.top-pos.y; const ns = Math.max(minS, Math.min(maxS, scale*delta)); const k = ns/scale; pos.x = e.clientX-rect.left - ox*k; pos.y = e.clientY-rect.top - oy*k; scale = ns; clamp(); update(); }, {passive:false});
+        const zin = document.getElementById('zin'); const zout = document.getElementById('zout');
+        zin?.addEventListener('click', ()=>{ const ns=Math.min(maxS, scale*1.15); const k=ns/scale; pos.x=pos.x-(canvas.clientWidth/2 - pos.x)*(k-1); pos.y=pos.y-(canvas.clientHeight/2 - pos.y)*(k-1); scale=ns; clamp(); update(); });
+        zout?.addEventListener('click', ()=>{ const ns=Math.max(minS, scale/1.15); const k=ns/scale; pos.x=pos.x-(canvas.clientWidth/2 - pos.x)*(k-1); pos.y=pos.y-(canvas.clientHeight/2 - pos.y)*(k-1); scale=ns; clamp(); update(); });
+        if(img.complete) img.dispatchEvent(new Event('load'));
+      }
+      initImageViewer(document.getElementById('imageWrap'));
+    </script>
+  </body>
+  </html>
+
